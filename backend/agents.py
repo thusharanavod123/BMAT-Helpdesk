@@ -1,7 +1,12 @@
-# agents.py
 import openai
+import os
+from dotenv import load_dotenv
 
-openai.api_key = "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"  # Replace with your API key
+# Load variables from .env
+load_dotenv()
+
+# Get API key from environment variables
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def faq_agent(user_query):
     faqs = {
@@ -17,29 +22,9 @@ def faq_agent(user_query):
 def escalation_agent(user_query):
     return f"Ticket created for: '{user_query}'. Our support team will get back to you soon."
 
-def openai_agent(user_query):
-    """Call OpenAI API for real-time AI response."""
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are BMAT Helpdesk AI assistant."},
-                {"role": "user", "content": user_query}
-            ],
-            max_tokens=200
-        )
-        return response.choices[0].message["content"].strip()
-    except Exception as e:
-        return f"Error with AI service: {e}"
-
 def bmat_router(user_query):
     faq_response = faq_agent(user_query)
     if faq_response:
         return {"agent": "FAQ Agent", "response": faq_response}
-    
-    # If no FAQ match, use OpenAI agent
-    ai_response = openai_agent(user_query)
-    if ai_response:
-        return {"agent": "AI Agent", "response": ai_response}
-    
-    return {"agent": "Escalation Agent", "response": escalation_agent(user_query)}
+    else:
+        return {"agent": "Escalation Agent", "response": escalation_agent(user_query)}
